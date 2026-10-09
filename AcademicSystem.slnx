@@ -1,3 +1,6 @@
 <Solution>
-  <Project Path="AcademicHybridApp/AcademicHybridApp.csproj" />
+  <Project Path="AcademicApi/AcademicApi.csproj" />
+  <Project Path="AcademicHybridApp/AcademicHybridApp.csproj">
+    <Deploy Solution="Debug|*" />
+  </Project>
 </Solution>
