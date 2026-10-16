@@ -1,6 +1,13 @@
-﻿namespace AcademicApi.Models
+﻿namespace AcademicApi.Models;
+
+public class Dosen
 {
-    public class Dosen
-    {
-    }
+    public int DosenId { get; set; }
+    public string Nidn { get; set; } = string.Empty;
+    public string NamaDosen { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Prodi { get; set; } = string.Empty;
+
+    // satu dosen banyak mahasiswa bimbingan
+    public List<Mahasiswa> DaftarMahasiswa { get; set; } = new();
 }
