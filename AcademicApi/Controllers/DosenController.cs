@@ -127,6 +127,12 @@ public class DosenController : ControllerBase
             return NotFound(new { message = "Data dosen tidak ditemukan." });
         }
 
+        //Dosen wali tidak boleh dihapus
+        if (await _context.Mahasiswa.AnyAsync(m => m.DosenId == id))
+        {
+            return Conflict(new { message = "Dosen tidak dapat dihapus karena masih menjadi dosen wali bagi mahasiswa." });
+        }
+
         _context.Dosen.Remove(dosen);
         await _context.SaveChangesAsync();
 
