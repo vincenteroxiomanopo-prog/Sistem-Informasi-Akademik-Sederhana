@@ -1,0 +1,82 @@
+﻿@page "/dosen"
+@inject DosenService Service
+
+<PageTitle>Daftar Dosen</PageTitle>
+
+<h1>Daftar Dosen</h1>
+
+@if (isLoading)
+{
+    <div class="d-flex align-items-center gap-2 my-3">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        <span>Memuat data dosen...</span>
+    </div>
+}
+else if (errorMessage is not null)
+{
+    <div class="alert alert-danger">
+        <p class="mb-2">@errorMessage</p>
+        <button class="btn btn-outline-danger btn-sm" @onclick="LoadAsync">Coba lagi</button>
+    </div>
+}
+else if (dosenList.Count == 0)
+{
+    <div class="alert alert-info">Belum ada data dosen.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>NIDN</th>
+                <th>Nama Dosen</th>
+                <th>Email</th>
+                <th>Prodi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for (var i = 0; i < dosenList.Count; i++)
+            {
+                var dosen = dosenList[i];
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>@dosen.Nidn</td>
+                    <td>@dosen.NamaDosen</td>
+                    <td>@dosen.Email</td>
+                    <td>@dosen.Prodi</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<DosenModel> dosenList = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        var result = await Service.GetAllAsync();
+
+        if (result.IsSuccess)
+        {
+            dosenList = result.Data ?? new();
+        }
+        else
+        {
+            errorMessage = result.Message;
+        }
+
+        isLoading = false;
+    }
+}
