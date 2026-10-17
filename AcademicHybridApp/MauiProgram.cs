@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using AcademicHybridApp.Services;
+using Microsoft.Extensions.Logging;
 
 namespace AcademicHybridApp
 {
@@ -16,8 +17,18 @@ namespace AcademicHybridApp
 
             builder.Services.AddMauiBlazorWebView();
 
+            builder.Services.AddSingleton(new HttpClient
+            {
+                BaseAddress = new Uri(ApiSettings.BaseAddress),
+                Timeout = TimeSpan.FromSeconds(10)
+            });
+
+            // Service yang akan dipakai oleh Blazor
+            builder.Services.AddTransient<DosenService>();
+            builder.Services.AddTransient<MahasiswaService>();
+
 #if DEBUG
-    		builder.Services.AddBlazorWebViewDeveloperTools();
+            builder.Services.AddBlazorWebViewDeveloperTools();
     		builder.Logging.AddDebug();
 #endif
 
