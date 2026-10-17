@@ -1,10 +1,12 @@
 ﻿@page "/dosen"
 @inject DosenService Service
+@inject NotificationService Notifier
 
 <PageTitle>Daftar Dosen</PageTitle>
 
 <h1>Daftar Dosen</h1>
-<a class="btn btn-primary mb-3" href="dosen/tambah">Tambah Dosen</a>   
+
+<a class="btn btn-primary mb-3" href="dosen/tambah">Tambah Dosen</a>
 
 @if (isLoading)
 {
@@ -49,6 +51,7 @@ else
                     <td>@dosen.Prodi</td>
                     <td>
                         <a class="btn btn-sm btn-outline-primary" href="dosen/edit/@dosen.DosenId">Edit</a>
+                        <button class="btn btn-sm btn-outline-danger ms-1" @onclick="() => AskDelete(dosen)">Hapus</button>
                     </td>
                 </tr>
             }
@@ -56,10 +59,38 @@ else
     </table>
 }
 
+@if (dosenToDelete is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Hapus dosen <strong>@dosenToDelete.NamaDosen</strong> (NIDN @dosenToDelete.Nidn)?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDelete" disabled="@isDeleting">Batal</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDeleteAsync" disabled="@isDeleting">
+                        @(isDeleting ? "Menghapus..." : "Ya, hapus")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 @code {
     private List<DosenModel> dosenList = new();
     private bool isLoading = true;
     private string? errorMessage;
+
+    private DosenModel? dosenToDelete;
+    private bool isDeleting;
 
     protected override async Task OnInitializedAsync()
     {
@@ -83,5 +114,44 @@ else
         }
 
         isLoading = false;
+    }
+
+    private void AskDelete(DosenModel dosen)
+    {
+        dosenToDelete = dosen;
+    }
+
+    private void CancelDelete()
+    {
+        dosenToDelete = null;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (dosenToDelete is null)
+        {
+            return;
+        }
+
+        isDeleting = true;
+
+        var result = await Service.DeleteAsync(dosenToDelete.DosenId);
+
+        if (result.IsSuccess)
+        {
+            Notifier.ShowSuccess(result.Message);
+        }
+        else
+        {
+            Notifier.ShowError(result.Message);
+        }
+
+        dosenToDelete = null;
+        isDeleting = false;
+
+        if (result.IsSuccess)
+        {
+            await LoadAsync();
+        }
     }
 }
