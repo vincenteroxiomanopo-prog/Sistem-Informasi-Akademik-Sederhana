@@ -26,6 +26,7 @@ namespace AcademicHybridApp
             // Service yang akan dipakai oleh Blazor
             builder.Services.AddTransient<DosenService>();
             builder.Services.AddTransient<MahasiswaService>();
+            builder.Services.AddSingleton<NotificationService>();
 
 #if DEBUG
             builder.Services.AddBlazorWebViewDeveloperTools();

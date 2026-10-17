@@ -1,4 +1,6 @@
 ﻿@inherits LayoutComponentBase
+@inject NotificationService Notifier
+@implements IDisposable
 
 <div class="page">
     <div class="sidebar">
@@ -11,7 +13,32 @@
         </div>
 
         <article class="content px-4">
+            @if (Notifier.Message is not null)
+            {
+                <div class="alert @(Notifier.IsSuccess ? "alert-success" : "alert-danger") alert-dismissible" role="alert">
+                    @Notifier.Message
+                    <button type="button" class="btn-close" aria-label="Tutup" @onclick="Notifier.Clear"></button>
+                </div>
+            }
+
             @Body
         </article>
     </main>
 </div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Notifier.OnChange += OnNotificationChanged;
+    }
+
+    private void OnNotificationChanged()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Notifier.OnChange -= OnNotificationChanged;
+    }
+}
