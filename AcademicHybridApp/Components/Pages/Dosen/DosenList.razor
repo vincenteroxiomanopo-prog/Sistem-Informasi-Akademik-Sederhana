@@ -4,6 +4,7 @@
 <PageTitle>Daftar Dosen</PageTitle>
 
 <h1>Daftar Dosen</h1>
+<a class="btn btn-primary mb-3" href="dosen/tambah">Tambah Dosen</a>   
 
 @if (isLoading)
 {
@@ -33,6 +34,7 @@ else
                 <th>Nama Dosen</th>
                 <th>Email</th>
                 <th>Prodi</th>
+                <th>Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -45,6 +47,9 @@ else
                     <td>@dosen.NamaDosen</td>
                     <td>@dosen.Email</td>
                     <td>@dosen.Prodi</td>
+                    <td>
+                        <a class="btn btn-sm btn-outline-primary" href="dosen/edit/@dosen.DosenId">Edit</a>
+                    </td>
                 </tr>
             }
         </tbody>

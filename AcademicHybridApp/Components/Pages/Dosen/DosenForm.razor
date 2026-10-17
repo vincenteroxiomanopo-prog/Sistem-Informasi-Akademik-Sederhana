@@ -1,0 +1,119 @@
+﻿@page "/dosen/tambah"
+@page "/dosen/edit/{Id:int}"
+@inject DosenService Service
+@inject NavigationManager Navigation
+
+<PageTitle>@JudulHalaman</PageTitle>
+
+<h1>@JudulHalaman</h1>
+
+@if (isLoading)
+{
+    <div class="d-flex align-items-center gap-2 my-3">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        <span>Memuat data dosen...</span>
+    </div>
+}
+else if (loadError is not null)
+{
+    <div class="alert alert-danger">
+        <p class="mb-2">@loadError</p>
+        <a class="btn btn-outline-secondary btn-sm" href="dosen">Kembali ke daftar</a>
+    </div>
+}
+else
+{
+    <EditForm Model="dosen" OnValidSubmit="SaveAsync">
+        <DataAnnotationsValidator />
+
+        @if (saveError is not null)
+        {
+            <div class="alert alert-danger">@saveError</div>
+        }
+
+        <div class="mb-3">
+            <label class="form-label" for="nidn">NIDN</label>
+            <InputText id="nidn" class="form-control" @bind-Value="dosen.Nidn" />
+            <ValidationMessage For="() => dosen.Nidn" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="nama">Nama Dosen</label>
+            <InputText id="nama" class="form-control" @bind-Value="dosen.NamaDosen" />
+            <ValidationMessage For="() => dosen.NamaDosen" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="email">Email</label>
+            <InputText id="email" class="form-control" @bind-Value="dosen.Email" />
+            <ValidationMessage For="() => dosen.Email" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="prodi">Program Studi</label>
+            <InputText id="prodi" class="form-control" @bind-Value="dosen.Prodi" />
+            <ValidationMessage For="() => dosen.Prodi" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+            @(isSaving ? "Menyimpan..." : "Simpan")
+        </button>
+        <a class="btn btn-secondary ms-2" href="dosen">Batal</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private DosenModel dosen = new();
+    private bool isLoading;
+    private bool isSaving;
+    private string? loadError;
+    private string? saveError;
+
+    private bool IsEdit => Id > 0;
+    private string JudulHalaman => IsEdit ? "Edit Dosen" : "Tambah Dosen";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!IsEdit)
+        {
+            return;
+        }
+
+        isLoading = true;
+
+        var result = await Service.GetByIdAsync(Id);
+
+        if (result.IsSuccess && result.Data is not null)
+        {
+            dosen = result.Data;
+        }
+        else
+        {
+            loadError = result.Message;
+        }
+
+        isLoading = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        isSaving = true;
+        saveError = null;
+
+        var result = IsEdit
+            ? await Service.UpdateAsync(dosen)
+            : await Service.CreateAsync(dosen);
+
+        if (result.IsSuccess)
+        {
+            Navigation.NavigateTo("dosen");
+        }
+        else
+        {
+            saveError = result.Message;
+            isSaving = false;
+        }
+    }
+}
