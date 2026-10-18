@@ -5,6 +5,7 @@
 <PageTitle>Daftar Mahasiswa</PageTitle>
 
 <h1>Daftar Mahasiswa</h1>
+<a class="btn btn-primary mb-3" href="mahasiswa/tambah">Tambah Mahasiswa</a>
 
 @if (isLoading)
 {
@@ -50,6 +51,7 @@ else
                         <td>@mahasiswa.Email</td>
                         <td>@mahasiswa.Angkatan</td>
                         <td>@mahasiswa.NamaDosenWali</td>
+                        <a class="btn btn-sm btn-outline-primary me-1" href="mahasiswa/edit/@mahasiswa.MahasiswaId">Edit</a>
                         <td>
                             <button class="btn btn-sm btn-outline-danger" @onclick="() => AskDelete(mahasiswa)">Hapus</button>
                         </td>

@@ -1,0 +1,153 @@
+﻿@page "/mahasiswa/tambah"
+@page "/mahasiswa/edit/{Id:int}"
+@inject MahasiswaService MahasiswaApi
+@inject DosenService DosenApi
+@inject NavigationManager Navigation
+@inject NotificationService Notifier
+
+<PageTitle>@JudulHalaman</PageTitle>
+
+<h1>@JudulHalaman</h1>
+
+@if (isLoading)
+{
+    <div class="d-flex align-items-center gap-2 my-3">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        <span>Memuat data...</span>
+    </div>
+}
+else if (loadError is not null)
+{
+    <div class="alert alert-danger">
+        <p class="mb-2">@loadError</p>
+        <a class="btn btn-outline-secondary btn-sm" href="mahasiswa">Kembali ke daftar</a>
+    </div>
+}
+else
+{
+    <EditForm Model="mahasiswa" OnValidSubmit="SaveAsync">
+        <DataAnnotationsValidator />
+
+        @if (saveError is not null)
+        {
+            <div class="alert alert-danger">@saveError</div>
+        }
+
+        @if (dosenList.Count == 0)
+        {
+            <div class="alert alert-warning">
+                Belum ada data dosen. Tambahkan dosen terlebih dahulu agar bisa memilih dosen wali.
+            </div>
+        }
+
+        <div class="mb-3">
+            <label class="form-label" for="nim">NIM</label>
+            <InputText id="nim" class="form-control" @bind-Value="mahasiswa.Nim" />
+            <ValidationMessage For="() => mahasiswa.Nim" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="nama">Nama Mahasiswa</label>
+            <InputText id="nama" class="form-control" @bind-Value="mahasiswa.NamaMahasiswa" />
+            <ValidationMessage For="() => mahasiswa.NamaMahasiswa" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="email">Email</label>
+            <InputText id="email" class="form-control" @bind-Value="mahasiswa.Email" />
+            <ValidationMessage For="() => mahasiswa.Email" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="angkatan">Angkatan</label>
+            <InputNumber id="angkatan" class="form-control" @bind-Value="mahasiswa.Angkatan" />
+            <ValidationMessage For="() => mahasiswa.Angkatan" />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label" for="dosen">Dosen Wali</label>
+            <InputSelect id="dosen" class="form-select" @bind-Value="mahasiswa.DosenId">
+                <option value="0">-- Pilih dosen wali --</option>
+                @foreach (var dosen in dosenList)
+                {
+                    <option value="@dosen.DosenId">@dosen.NamaDosen (@dosen.Nidn)</option>
+                }
+            </InputSelect>
+            <ValidationMessage For="() => mahasiswa.DosenId" />
+        </div>
+
+        <button type="submit" class="btn btn-primary" disabled="@isSaving">
+            @(isSaving ? "Menyimpan..." : "Simpan")
+        </button>
+        <a class="btn btn-secondary ms-2" href="mahasiswa">Batal</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private MahasiswaModel mahasiswa = new();
+    private List<DosenModel> dosenList = new();
+    private bool isLoading = true;
+    private bool isSaving;
+    private string? loadError;
+    private string? saveError;
+
+    private bool IsEdit => Id > 0;
+    private string JudulHalaman => IsEdit ? "Edit Mahasiswa" : "Tambah Mahasiswa";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var dosenResult = await DosenApi.GetAllAsync();
+
+        if (!dosenResult.IsSuccess)
+        {
+            loadError = dosenResult.Message;
+            isLoading = false;
+            return;
+        }
+
+        dosenList = dosenResult.Data ?? new();
+
+        if (IsEdit)
+        {
+            var result = await MahasiswaApi.GetByIdAsync(Id);
+
+            if (result.IsSuccess && result.Data is not null)
+            {
+                mahasiswa = result.Data;
+            }
+            else
+            {
+                loadError = result.Message;
+            }
+        }
+        else
+        {
+            mahasiswa.Angkatan = 2026; 
+        }
+
+        isLoading = false;
+    }
+
+    private async Task SaveAsync()
+    {
+        isSaving = true;
+        saveError = null;
+
+        var result = IsEdit
+            ? await MahasiswaApi.UpdateAsync(mahasiswa)
+            : await MahasiswaApi.CreateAsync(mahasiswa);
+
+        if (result.IsSuccess)
+        {
+            Notifier.ShowSuccess(result.Message);
+            Navigation.NavigateTo("mahasiswa");
+        }
+        else
+        {
+            saveError = result.Message;
+            isSaving = false;
+        }
+    }
+}
