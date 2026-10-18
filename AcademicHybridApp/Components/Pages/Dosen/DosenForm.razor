@@ -109,6 +109,7 @@ else
 
         if (result.IsSuccess)
         {
+            Notifier.ShowSuccess(result.Message);
             Navigation.NavigateTo("dosen");
         }
         else

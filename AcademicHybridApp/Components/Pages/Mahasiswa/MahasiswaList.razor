@@ -1,0 +1,158 @@
+﻿@page "/mahasiswa"
+@inject MahasiswaService Service
+@inject NotificationService Notifier
+
+<PageTitle>Daftar Mahasiswa</PageTitle>
+
+<h1>Daftar Mahasiswa</h1>
+
+@if (isLoading)
+{
+    <div class="d-flex align-items-center gap-2 my-3">
+        <div class="spinner-border spinner-border-sm" role="status"></div>
+        <span>Memuat data mahasiswa...</span>
+    </div>
+}
+else if (errorMessage is not null)
+{
+    <div class="alert alert-danger">
+        <p class="mb-2">@errorMessage</p>
+        <button class="btn btn-outline-danger btn-sm" @onclick="LoadAsync">Coba lagi</button>
+    </div>
+}
+else if (mahasiswaList.Count == 0)
+{
+    <div class="alert alert-info">Belum ada data mahasiswa.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>NIM</th>
+                    <th>Nama Mahasiswa</th>
+                    <th>Email</th>
+                    <th>Angkatan</th>
+                    <th>Dosen Wali</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (var i = 0; i < mahasiswaList.Count; i++)
+                {
+                    var mahasiswa = mahasiswaList[i];
+                    <tr>
+                        <td>@(i + 1)</td>
+                        <td>@mahasiswa.Nim</td>
+                        <td>@mahasiswa.NamaMahasiswa</td>
+                        <td>@mahasiswa.Email</td>
+                        <td>@mahasiswa.Angkatan</td>
+                        <td>@mahasiswa.NamaDosenWali</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => AskDelete(mahasiswa)">Hapus</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (mahasiswaToDelete is not null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Konfirmasi Hapus</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">
+                        Hapus mahasiswa <strong>@mahasiswaToDelete.NamaMahasiswa</strong> (NIM @mahasiswaToDelete.Nim)?
+                    </p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="CancelDelete" disabled="@isDeleting">Batal</button>
+                    <button class="btn btn-danger" @onclick="ConfirmDeleteAsync" disabled="@isDeleting">
+                        @(isDeleting ? "Menghapus..." : "Ya, hapus")
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<MahasiswaModel> mahasiswaList = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    private MahasiswaModel? mahasiswaToDelete;
+    private bool isDeleting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        var result = await Service.GetAllAsync();
+
+        if (result.IsSuccess)
+        {
+            mahasiswaList = result.Data ?? new();
+        }
+        else
+        {
+            errorMessage = result.Message;
+        }
+
+        isLoading = false;
+    }
+
+    private void AskDelete(MahasiswaModel mahasiswa)
+    {
+        mahasiswaToDelete = mahasiswa;
+    }
+
+    private void CancelDelete()
+    {
+        mahasiswaToDelete = null;
+    }
+
+    private async Task ConfirmDeleteAsync()
+    {
+        if (mahasiswaToDelete is null)
+        {
+            return;
+        }
+
+        isDeleting = true;
+
+        var result = await Service.DeleteAsync(mahasiswaToDelete.MahasiswaId);
+
+        if (result.IsSuccess)
+        {
+            Notifier.ShowSuccess(result.Message);
+        }
+        else
+        {
+            Notifier.ShowError(result.Message);
+        }
+
+        mahasiswaToDelete = null;
+        isDeleting = false;
+
+        if (result.IsSuccess)
+        {
+            await LoadAsync();
+        }
+    }
+}
