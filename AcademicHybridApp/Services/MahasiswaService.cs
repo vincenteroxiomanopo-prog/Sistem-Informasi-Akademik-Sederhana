@@ -11,8 +11,14 @@ public class MahasiswaService : ApiServiceBase
     {
     }
 
-    public Task<ServiceResult<List<MahasiswaModel>>> GetAllAsync() =>
-        GetDataAsync<List<MahasiswaModel>>(Endpoint);
+    public Task<ServiceResult<List<MahasiswaModel>>> GetAllAsync(string? cari = null)
+    {
+        var url = string.IsNullOrWhiteSpace(cari)
+            ? Endpoint
+            : $"{Endpoint}?cari={Uri.EscapeDataString(cari.Trim())}";
+
+        return GetDataAsync<List<MahasiswaModel>>(url);
+    }
 
     public Task<ServiceResult<MahasiswaModel>> GetByIdAsync(int id) =>
         GetDataAsync<MahasiswaModel>($"{Endpoint}/{id}");

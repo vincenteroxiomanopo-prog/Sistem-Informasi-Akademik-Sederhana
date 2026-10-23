@@ -7,6 +7,17 @@
 <h1>Daftar Mahasiswa</h1>
 <a class="btn btn-primary mb-3" href="mahasiswa/tambah">Tambah Mahasiswa</a>
 
+<form class="row g-2 mb-3" @onsubmit="SearchAsync">
+    <div class="col-sm-6 col-md-5">
+        <input class="form-control" placeholder="Cari NIM atau nama..."
+               @bind="searchText" @bind:event="oninput" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary" disabled="@isLoading">Cari</button>
+        <button type="button" class="btn btn-outline-secondary" @onclick="ResetAsync" disabled="@isLoading">Reset</button>
+    </div>
+</form>
+
 @if (isLoading)
 {
     <div class="d-flex align-items-center gap-2 my-3">
@@ -23,7 +34,11 @@ else if (errorMessage is not null)
 }
 else if (mahasiswaList.Count == 0)
 {
-    <div class="alert alert-info">Belum ada data mahasiswa.</div>
+    <div class="alert alert-info">
+        @(string.IsNullOrWhiteSpace(activeSearch)
+            ? "Belum ada data mahasiswa."
+            : $"Tidak ada mahasiswa yang cocok dengan '{activeSearch}'.")
+    </div>
 }
 else
 {
@@ -51,8 +66,8 @@ else
                         <td>@mahasiswa.Email</td>
                         <td>@mahasiswa.Angkatan</td>
                         <td>@mahasiswa.NamaDosenWali</td>
-                        <a class="btn btn-sm btn-outline-primary me-1" href="mahasiswa/edit/@mahasiswa.MahasiswaId">Edit</a>
                         <td>
+                            <a class="btn btn-sm btn-outline-primary me-1" href="mahasiswa/edit/@mahasiswa.MahasiswaId">Edit</a>
                             <button class="btn btn-sm btn-outline-danger" @onclick="() => AskDelete(mahasiswa)">Hapus</button>
                         </td>
                     </tr>
@@ -91,9 +106,23 @@ else
     private List<MahasiswaModel> mahasiswaList = new();
     private bool isLoading = true;
     private string? errorMessage;
-
+    private string? searchText;    
+    private string? activeSearch;  
     private MahasiswaModel? mahasiswaToDelete;
     private bool isDeleting;
+
+    private async Task SearchAsync()
+    {
+        activeSearch = searchText?.Trim();
+        await LoadAsync();
+    }
+
+    private async Task ResetAsync()
+    {
+        searchText = null;
+        activeSearch = null;
+        await LoadAsync();
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -105,7 +134,7 @@ else
         isLoading = true;
         errorMessage = null;
 
-        var result = await Service.GetAllAsync();
+        var result = await Service.GetAllAsync(activeSearch);
 
         if (result.IsSuccess)
         {
