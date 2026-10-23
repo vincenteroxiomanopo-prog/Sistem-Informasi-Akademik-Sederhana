@@ -1,15 +1,53 @@
-html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+:root {
+    --app-sidebar: #0f2a4a;
+    --app-border: #e2e6ee;
+    /* Menimpa variabel Bootstrap agar semua komponen ikut berubah */
+    --bs-primary: #1d4ed8;
+    --bs-primary-rgb: 29, 78, 216;
+    --bs-link-color: #1d4ed8;
+    --bs-link-color-rgb: 29, 78, 216;
+    --bs-link-hover-color: #1e40af;
+    --bs-link-hover-color-rgb: 30, 64, 175;
+    --bs-body-color: #1f2937;
+    --bs-body-bg: #f4f6fa;
+    --bs-border-radius: 0.5rem;
+    --bs-body-font-family: 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
 }
 
-a, .btn-link {
-    color: #006bb7;
+html, body {
+    font-family: var(--bs-body-font-family);
+}
+
+h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+}
+
+.btn {
+    font-weight: 500;
 }
 
 .btn-primary {
-    color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    --bs-btn-bg: #1d4ed8;
+    --bs-btn-border-color: #1d4ed8;
+    --bs-btn-hover-bg: #1e40af;
+    --bs-btn-hover-border-color: #1e40af;
+    --bs-btn-active-bg: #1e3a8a;
+    --bs-btn-active-border-color: #1e3a8a;
+    --bs-btn-disabled-bg: #1d4ed8;
+    --bs-btn-disabled-border-color: #1d4ed8;
+}
+
+.btn-outline-primary {
+    --bs-btn-color: #1d4ed8;
+    --bs-btn-border-color: #1d4ed8;
+    --bs-btn-hover-bg: #1d4ed8;
+    --bs-btn-hover-border-color: #1d4ed8;
+    --bs-btn-active-bg: #1e40af;
+    --bs-btn-active-border-color: #1e40af;
+    --bs-btn-disabled-color: #1d4ed8;
+    --bs-btn-disabled-border-color: #1d4ed8;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
