@@ -1,17 +1,28 @@
 ﻿@page "/"
+@inject DosenService DosenApi
+@inject MahasiswaService MahasiswaApi
 
 <PageTitle>Beranda</PageTitle>
 
 <h1>Sistem Informasi Akademik Sederhana</h1>
 <p class="text-muted">
-    Aplikasi pengelola data dosen dan mahasiswa. 
+    Aplikasi pengelola data dosen dan mahasiswa.
 </p>
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-warning">
+        <p class="mb-2">Jumlah data tidak dapat dimuat. @errorMessage</p>
+        <button class="btn btn-outline-warning btn-sm" @onclick="LoadAsync">Coba lagi</button>
+    </div>
+}
 
 <div class="row g-3">
     <div class="col-sm-6">
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Data Dosen</h5>
+                <p class="display-6 mb-1">@CountText(jumlahDosen)</p>
                 <p class="card-text">Lihat, tambah, ubah, dan hapus data dosen.</p>
                 <a class="btn btn-primary" href="dosen">Buka Dosen</a>
             </div>
@@ -21,9 +32,52 @@
         <div class="card h-100">
             <div class="card-body">
                 <h5 class="card-title">Data Mahasiswa</h5>
+                <p class="display-6 mb-1">@CountText(jumlahMahasiswa)</p>
                 <p class="card-text">Kelola data mahasiswa beserta dosen walinya.</p>
                 <a class="btn btn-primary" href="mahasiswa">Buka Mahasiswa</a>
             </div>
         </div>
     </div>
 </div>
+
+@code {
+    private int? jumlahDosen;
+    private int? jumlahMahasiswa;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        var dosenTask = DosenApi.GetAllAsync();
+        var mahasiswaTask = MahasiswaApi.GetAllAsync();
+        await Task.WhenAll(dosenTask, mahasiswaTask);
+
+        var dosenResult = dosenTask.Result;
+        var mahasiswaResult = mahasiswaTask.Result;
+
+        jumlahDosen = dosenResult.IsSuccess ? dosenResult.Data?.Count ?? 0 : null;
+        jumlahMahasiswa = mahasiswaResult.IsSuccess ? mahasiswaResult.Data?.Count ?? 0 : null;
+
+        if (!dosenResult.IsSuccess)
+        {
+            errorMessage = dosenResult.Message;
+        }
+        else if (!mahasiswaResult.IsSuccess)
+        {
+            errorMessage = mahasiswaResult.Message;
+        }
+
+        isLoading = false;
+    }
+
+    private string CountText(int? jumlah) =>
+        isLoading ? "..." : jumlah?.ToString() ?? "-";
+}
