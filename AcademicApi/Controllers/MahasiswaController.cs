@@ -35,11 +35,22 @@ public class MahasiswaController : ControllerBase
             });
     }
 
-    // GET: api/mahasiswa
+    // GET: api/mahasiswa  atau  api/mahasiswa?cari=budi
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MahasiswaResponseDto>>> GetMahasiswa()
+    public async Task<ActionResult<IEnumerable<MahasiswaResponseDto>>> GetMahasiswa([FromQuery] string? cari)
     {
-        return Ok(await QueryResponse().ToListAsync());
+        var query = QueryResponse();
+
+        // disaring jika mengisi kata kunci
+        if (!string.IsNullOrWhiteSpace(cari))
+        {
+            var pola = $"%{cari.Trim()}%";
+            query = query.Where(r =>
+                EF.Functions.Like(r.Nim, pola) ||
+                EF.Functions.Like(r.NamaMahasiswa, pola));
+        }
+
+        return Ok(await query.ToListAsync());
     }
 
     // GET: api/mahasiswa/5
