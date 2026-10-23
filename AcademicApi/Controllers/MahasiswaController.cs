@@ -35,13 +35,15 @@ public class MahasiswaController : ControllerBase
             });
     }
 
-    // GET: api/mahasiswa  atau  api/mahasiswa?cari=budi
+    // GET: api/mahasiswa
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MahasiswaResponseDto>>> GetMahasiswa([FromQuery] string? cari)
+    public async Task<ActionResult<IEnumerable<MahasiswaResponseDto>>> GetMahasiswa(
+        [FromQuery] string? cari,
+        [FromQuery] string? urut,
+        [FromQuery] bool desc = false)
     {
         var query = QueryResponse();
 
-        // disaring jika mengisi kata kunci
         if (!string.IsNullOrWhiteSpace(cari))
         {
             var pola = $"%{cari.Trim()}%";
@@ -49,6 +51,15 @@ public class MahasiswaController : ControllerBase
                 EF.Functions.Like(r.Nim, pola) ||
                 EF.Functions.Like(r.NamaMahasiswa, pola));
         }
+
+        // Urutan: nim, nama, atau angkatan.
+        query = urut?.ToLower() switch
+        {
+            "nim" => desc ? query.OrderByDescending(r => r.Nim) : query.OrderBy(r => r.Nim),
+            "nama" => desc ? query.OrderByDescending(r => r.NamaMahasiswa) : query.OrderBy(r => r.NamaMahasiswa),
+            "angkatan" => desc ? query.OrderByDescending(r => r.Angkatan) : query.OrderBy(r => r.Angkatan),
+            _ => query
+        };
 
         return Ok(await query.ToListAsync());
     }
