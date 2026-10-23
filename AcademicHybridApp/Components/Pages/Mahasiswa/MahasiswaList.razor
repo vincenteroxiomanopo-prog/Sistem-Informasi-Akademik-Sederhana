@@ -47,10 +47,10 @@ else
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>NIM</th>
-                    <th>Nama Mahasiswa</th>
+                    <th role="button" @onclick='() => SortAsync("nim")'>NIM @Arrow("nim")</th>
+                    <th role="button" @onclick='() => SortAsync("nama")'>Nama Mahasiswa @Arrow("nama")</th>
                     <th>Email</th>
-                    <th>Angkatan</th>
+                    <th role="button" @onclick='() => SortAsync("angkatan")'>Angkatan @Arrow("angkatan")</th>
                     <th>Dosen Wali</th>
                     <th>Aksi</th>
                 </tr>
@@ -108,8 +108,20 @@ else
     private string? errorMessage;
     private string? searchText;    
     private string? activeSearch;  
+    private string? urut;
+    private bool desc;
     private MahasiswaModel? mahasiswaToDelete;
     private bool isDeleting;
+    
+    private async Task SortAsync(string kolom)
+    {
+        // Klik kolom yang sama = balik arah. Kolom baru = mulai dari naik.
+        desc = urut == kolom && !desc;
+        urut = kolom;
+        await LoadAsync();
+    }
+    private string Arrow(string kolom) =>
+    urut != kolom ? "" : desc ? " ▼" : " ▲";
 
     private async Task SearchAsync()
     {
@@ -121,6 +133,8 @@ else
     {
         searchText = null;
         activeSearch = null;
+        urut = null;
+        desc = false;
         await LoadAsync();
     }
 
@@ -134,7 +148,7 @@ else
         isLoading = true;
         errorMessage = null;
 
-        var result = await Service.GetAllAsync(activeSearch);
+        var result = await Service.GetAllAsync(activeSearch, urut, desc);
 
         if (result.IsSuccess)
         {

@@ -11,12 +11,22 @@ public class MahasiswaService : ApiServiceBase
     {
     }
 
-    public Task<ServiceResult<List<MahasiswaModel>>> GetAllAsync(string? cari = null)
+    public Task<ServiceResult<List<MahasiswaModel>>> GetAllAsync(
+        string? cari = null, string? urut = null, bool desc = false)
     {
-        var url = string.IsNullOrWhiteSpace(cari)
-            ? Endpoint
-            : $"{Endpoint}?cari={Uri.EscapeDataString(cari.Trim())}";
+        var parameter = new List<string>();
 
+        if (!string.IsNullOrWhiteSpace(cari))
+        {
+            parameter.Add($"cari={Uri.EscapeDataString(cari.Trim())}");
+        }
+
+        if (!string.IsNullOrWhiteSpace(urut))
+        {
+            parameter.Add($"urut={urut}&desc={desc.ToString().ToLower()}");
+        }
+
+        var url = parameter.Count == 0 ? Endpoint : $"{Endpoint}?{string.Join("&", parameter)}";
         return GetDataAsync<List<MahasiswaModel>>(url);
     }
 
